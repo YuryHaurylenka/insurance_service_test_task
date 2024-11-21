@@ -14,6 +14,7 @@ async def create_insurance_request(
         cargo_type=insurance_data.cargo_type,
         declared_value=insurance_data.declared_value,
         insurance_cost=insurance_cost,
+        user_id=insurance_data.user_id,
     )
     session.add(insurance_request)
     await session.commit()
