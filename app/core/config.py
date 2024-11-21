@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     postgres_port: int = 5432
     db_echo: bool = False
 
+    kafka_broker: str = "kafka:9092"
+    kafka_topic_tariffs: str = "tariff_logs"
+    kafka_topic_insurance: str = "insurance_logs"
+
     @property
     def db_url(self) -> str:
         """
