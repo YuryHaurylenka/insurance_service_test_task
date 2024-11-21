@@ -1,13 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.db.session import get_db
-from app.schemas.tariff import TariffCreate, TariffResponse, TariffUpdatePartial
+
 from app.db.repository.tariff import (
+    create_tariff,
     get_all_tariffs,
     get_tariff_by_id,
-    create_tariff,
     update_tariff,
-    delete_tariff,
+)
+from app.db.session import get_db
+from app.schemas.tariff import (
+    TariffCreate,
+    TariffResponse,
+    TariffUpdatePartial,
 )
 
 router = APIRouter()
@@ -76,10 +80,14 @@ async def update_tariff_partial(
 
 
 @router.delete("/{tariff_id}", response_model=dict)
-async def delete_tariff_endpoint(tariff_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_tariff(tariff_id: int, db: AsyncSession = Depends(get_db)):
     """
     Delete a tariff by its ID.
     """
-    tariff = await get_existing_tariff(tariff_id, db)
-    await delete_tariff(db, tariff)
+    tariff = await get_tariff_by_id(db, tariff_id)
+    if not tariff:
+        raise HTTPException(status_code=404, detail="Tariff not found")
+
+    await db.delete(tariff)
+    await db.commit()
     return {"status": "success", "message": f"Tariff with ID {tariff_id} deleted"}
