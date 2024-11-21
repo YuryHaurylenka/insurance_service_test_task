@@ -1,5 +1,6 @@
 from datetime import date
 
+from app.services.logs import log_event
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,10 +15,11 @@ router = APIRouter()
 
 @router.post("/", response_model=InsuranceResponse)
 async def calculate_and_log_insurance(
-    request: InsuranceCreate, db: AsyncSession = Depends(get_db)
+    request: InsuranceCreate,
+    db: AsyncSession = Depends(get_db),
 ):
     """
-    Calculate insurance cost and log the request.
+    Calculate insurance cost, log the request to Kafka, and save it in the database.
     """
     calc_date = date.today()
 
@@ -39,6 +41,19 @@ async def calculate_and_log_insurance(
 
     insurance_request = await create_insurance_request(
         db, insurance_data=request, insurance_cost=insurance_cost
+    )
+
+    await log_event(
+        session=db,
+        topic="insurance_logs",
+        action="CALCULATE_INSURANCE",
+        details={
+            "cargo_type": request.cargo_type,
+            "declared_value": request.declared_value,
+            "insurance_cost": insurance_cost,
+            "calculation_date": calc_date.isoformat(),
+        },
+        user_id=request.user_id,
     )
 
     return InsuranceResponse(
