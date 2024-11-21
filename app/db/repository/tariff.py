@@ -1,8 +1,11 @@
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.services.logs import log_event
 from app.models.tariff import Tariff
 from app.schemas.tariff import TariffCreate, TariffUpdate
+from app.services.tariff import validate_tariff_dates
 
 
 async def get_all_tariffs(session: AsyncSession) -> list[Tariff]:
@@ -21,14 +24,41 @@ async def get_tariff_by_id(session: AsyncSession, tariff_id: int) -> Tariff | No
     return await session.get(Tariff, tariff_id)
 
 
-async def create_tariff(session: AsyncSession, tariff_in: TariffCreate) -> Tariff:
+async def create_tariff(
+    session: AsyncSession, tariff_in: TariffCreate, user_id: int | None = None
+) -> Tariff:
     """
-    Create a new tariff in the database.
+    Create a new tariff and log the action to Kafka.
     """
-    tariff = Tariff(**tariff_in.dict())
+    await validate_tariff_dates(
+        session=session,
+        cargo_type=tariff_in.cargo_type,
+        valid_from=tariff_in.valid_from,
+        valid_to=tariff_in.valid_to,
+    )
+
+    tariff = Tariff(
+        cargo_type=tariff_in.cargo_type,
+        rate=tariff_in.rate,
+        valid_from=tariff_in.valid_from,
+        valid_to=tariff_in.valid_to,
+    )
+
     session.add(tariff)
-    await session.commit()
-    await session.refresh(tariff)
+    try:
+        await session.commit()
+        await session.refresh(tariff)
+    except IntegrityError as e:
+        await session.rollback()
+        raise ValueError(f"Error saving tariff: {str(e)}")
+
+    await log_event(
+        session=session,
+        topic="tariff_logs",
+        action="CREATE_TARIFF",
+        details=tariff_in.dict(),
+    )
+
     return tariff
 
 
