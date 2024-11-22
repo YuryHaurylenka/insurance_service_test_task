@@ -1,5 +1,6 @@
 from fastapi import APIRouter
-from app.api.endpoints import tariffs_router, insurance_router
+
+from app.api.endpoints import insurance_router, tariffs_router
 
 router = APIRouter()
 

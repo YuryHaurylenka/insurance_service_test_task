@@ -1,3 +1,4 @@
+import logging
 from datetime import date, timedelta
 from typing import Dict, List
 
@@ -5,11 +6,10 @@ from fastapi import HTTPException
 from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.models.tariff import CargoType, Tariff
 from app.schemas.tariff import TariffCreate, TariffJsonItem
 from .kafka import add_to_log_buffer
-from app.core.config import settings
-import logging
 
 logger = logging.getLogger("tariff_service")
 
