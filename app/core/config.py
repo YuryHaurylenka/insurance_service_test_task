@@ -13,8 +13,8 @@ class Settings(BaseSettings):
     postgres_user: str
     postgres_password: str
     postgres_db: str
-    postgres_host: str = "postgresql"
-    postgres_port: int = 5432
+    postgres_host: str
+    postgres_port: int
     db_echo: bool = False
 
     kafka_broker: str = "kafka:9092"
