@@ -1,7 +1,6 @@
 from datetime import date
-from typing import Dict, List
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.models.tariff import CargoType
 
@@ -20,12 +19,18 @@ class TariffBase(BaseModel):
 class TariffCreate(TariffBase):
     pass
 
+    @model_validator(mode="after")
+    def check_dates(cls, values):
+        if values.valid_from > values.valid_to:
+            raise ValueError("'valid_from' must be the date, no later than 'valid_to'.")
+        return values
 
-class TariffUpdate(TariffBase):
+
+class TariffUpdate(TariffCreate):
     pass
 
 
-class TariffUpdatePartial(BaseModel):
+class TariffUpdatePartial(TariffCreate):
     cargo_type: CargoType | None = Field(None)
     rate: float | None = Field(None, ge=0)
     valid_from: date | None = None
