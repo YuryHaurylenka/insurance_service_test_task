@@ -1,6 +1,5 @@
 from asyncio import current_task
 
-from sqlalchemy import inspect
 from sqlalchemy.ext.asyncio import (
     async_scoped_session,
     async_sessionmaker,
@@ -33,20 +32,11 @@ class Database:
 
     async def get_session(self):
         """
-        Dependency для FastAPI для создания базовой async сессии.
+        Dependency для FastAPI for creating async sessions.
         """
         async with self.session_factory() as session:
             yield session
             await session.close()
-
-    async def ensure_object_in_session(self, session, obj):
-        """
-        Ensure object is attached to the given session.
-        """
-        obj_session = inspect(obj).session
-        if obj_session is not session:
-            return await session.merge(obj)
-        return obj
 
 
 db = Database(
