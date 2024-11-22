@@ -10,9 +10,11 @@ from app.db.repository.tariff import (
 from app.db.session import get_db
 from app.schemas.tariff import (
     TariffCreate,
+    TariffJsonInput,
     TariffResponse,
     TariffUpdatePartial,
 )
+from app.services.tariff import load_tariffs_from_json
 
 router = APIRouter()
 
@@ -91,3 +93,21 @@ async def delete_tariff(tariff_id: int, db: AsyncSession = Depends(get_db)):
     await db.delete(tariff)
     await db.commit()
     return {"status": "success", "message": f"Tariff with ID {tariff_id} deleted"}
+
+
+@router.post("/load-tariffs/")
+async def load_tariffs(
+    tariffs_data: TariffJsonInput,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Load tariffs into the database from a JSON structure.
+    """
+    try:
+        await load_tariffs_from_json(
+            session=db,
+            tariffs_data=tariffs_data.tariffs,
+        )
+        return {"status": "success", "message": "Tariffs loaded successfully"}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
