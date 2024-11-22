@@ -15,6 +15,4 @@ async def save_action_log(
         user_id=user_id,
     )
     session.add(log_entry)
-    await session.commit()
-    await session.refresh(log_entry)
     return log_entry

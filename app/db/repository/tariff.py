@@ -2,7 +2,6 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.services.logs import log_event
 from app.models.tariff import Tariff
 from app.schemas.tariff import TariffCreate, TariffUpdate
 from app.services.tariff import validate_tariff_dates
@@ -48,16 +47,10 @@ async def create_tariff(
     try:
         await session.commit()
         await session.refresh(tariff)
+        await tariff.log_creation()
     except IntegrityError as e:
         await session.rollback()
         raise ValueError(f"Error saving tariff: {str(e)}")
-
-    await log_event(
-        session=session,
-        topic="tariff_logs",
-        action="CREATE_TARIFF",
-        details=tariff_in.dict(),
-    )
 
     return tariff
 
@@ -81,6 +74,8 @@ async def update_tariff(
 
     await session.commit()
     await session.refresh(tariff)
+    await tariff.log_update(session, update_data)
+
     return tariff
 
 
@@ -88,5 +83,6 @@ async def delete_tariff(session: AsyncSession, tariff: Tariff) -> None:
     """
     Delete a tariff from the database.
     """
+    await tariff.log_deletion(session)
     await session.delete(tariff)
     await session.commit()

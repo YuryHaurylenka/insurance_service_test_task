@@ -17,8 +17,6 @@ async def create_insurance_request(
         user_id=insurance_data.user_id,
     )
     session.add(insurance_request)
-    await session.commit()
-    await session.refresh(insurance_request)
     return insurance_request
 
 
