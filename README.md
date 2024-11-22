@@ -32,6 +32,8 @@ Create a `.env` file in the project root with the following content(example):
 POSTGRES_USER=insurance_user
 POSTGRES_PASSWORD=insurance_password
 POSTGRES_DB=insurance_db
+POSTGRES_HOST=postgresql  # The hostname must remain 'postgresql' as it is the service name in Docker Compose.
+POSTGRES_PORT=5432       # The port must remain 5432 unless you explicitly change it in Docker Compose.
 ```
 
 ### 3. Run the Application with Docker Compose
@@ -48,7 +50,7 @@ docker-compose up -d
 This command will start the following services:
 
 - **app**: The FastAPI application.
-- **postgres**: PostgreSQL database.
+- **postgresql**: PostgreSQL database.
 - **kafka**: Kafka broker.
 - **zookeeper**: Zookeeper service required by Kafka.
 
