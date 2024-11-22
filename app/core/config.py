@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     kafka_broker: str = "kafka:9092"
     kafka_topic_tariffs: str = "tariff_logs"
     kafka_topic_insurance: str = "insurance_logs"
+    batch_size: int = 5
+    flush_interval: int = 10
 
     @property
     def db_url(self) -> str:
