@@ -3,6 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 from app.models.tariff import CargoType
+from app.schemas.tariff import TariffResponse
 
 
 class InsuranceBase(BaseModel):
@@ -22,3 +23,4 @@ class InsuranceResponse(BaseModel):
     insurance_cost: float
     timestamp: datetime
     user_id: Optional[int] = None
+    tariff: TariffResponse
