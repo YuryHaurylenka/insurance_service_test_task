@@ -74,7 +74,7 @@ async def update_tariff(
 
     await session.commit()
     await session.refresh(tariff)
-    await tariff.log_update(session, update_data)
+    await tariff.log_update(update_data)
 
     return tariff
 
@@ -83,6 +83,6 @@ async def delete_tariff(session: AsyncSession, tariff: Tariff) -> None:
     """
     Delete a tariff from the database.
     """
-    await tariff.log_deletion(session)
+    await tariff.log_deletion()
     await session.delete(tariff)
     await session.commit()
